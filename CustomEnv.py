@@ -90,7 +90,7 @@ class CustomEnv(gym.Env):
         observation = np.array(observation).flatten().astype(np.uint8)
         reward = self.state.playerScores[1]
         info = {"currentTrick": self.state.currentTrick,
-                "hands": self.state.playerHands[1], "played": deck[action]}
+                "hands": self.state.playerHands, "played": deck[action]}
 
         return observation, reward, done, info
 
