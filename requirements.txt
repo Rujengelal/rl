@@ -2,3 +2,4 @@ sanic
 sanic-cors
 # scikit-learn
 mcts
+stable-baselines3[extra]
