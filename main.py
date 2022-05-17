@@ -2,7 +2,8 @@ from stable_baselines3 import A2C, DQN
 from stable_baselines3.common.callbacks import CheckpointCallback
 from stable_baselines3.common.env_checker import check_env
 from CustomEnv import CustomEnv, deck
-
+from stable_baselines3.common.env_util import make_vec_env
+vecEnv = make_vec_env(CustomEnv, 8)
 env = CustomEnv()
 # It will check your custom environment and output additional warnings if needed
 # check_env(env)
@@ -17,6 +18,11 @@ for i in range(500):
     obs, reward, done, info = env.step(action)
     print(info)
     print(reward)
+    print("")
+    print("")
+    print("")
+    print("")
+    print("")
     env.render()
     if done:
         obs = env.reset()
