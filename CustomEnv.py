@@ -44,6 +44,8 @@ class CustomEnv(gym.Env):
         self.observation_space = spaces.Box(
             low=0, high=1, shape=sh.shape, dtype=np.uint8)
 
+        print(Card(2, "S") in deck)
+
         # self.observation_space = spaces.Discrete(n=2)
 
     def step(self, action):
