@@ -77,7 +77,7 @@ class CustomEnv(gym.Env):
                 self.state.currentTrick, self.state.playerHands[self.state.playerToMove])
             self.state.DoMove(random.choice(moves))
 
-        if len(self.state.discards) < 52:
+        if len(self.state.discards) >= 52:
             done = True
         # observation = []  # current_tricks,player_hands,discards
         observation.extend(encoding(self.state.currentTrick))
