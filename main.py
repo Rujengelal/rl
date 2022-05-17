@@ -8,7 +8,7 @@ env = CustomEnv()
 # check_env(env)
 checkpoint_callback = CheckpointCallback(save_freq=100000, save_path='./logs/',
                                          name_prefix='rl_model')
-model = DQN('MlpPolicy', env, verbose=0)
+model = DQN('MlpPolicy', env, verbose=1)
 model.learn(total_timesteps=1070000, callback=checkpoint_callback)
 model.save("model")
 obs = env.reset()

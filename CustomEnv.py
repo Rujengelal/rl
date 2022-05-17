@@ -12,7 +12,7 @@ deck = [
 ]
 
 
-def encoding(to_encode):
+def encoding(to_encode, reverse=False):
     encoded_labels = [0 for _ in range(52)]
     if to_encode is None:
         return encoded_labels
@@ -25,6 +25,10 @@ def encoding(to_encode):
 
         except:
             pass
+
+    if not reverse:
+        return encoded_labels
+    encoded_labels = [1 if x == 0 else 0 for x in encoded_labels]
     return encoded_labels
 
 
@@ -62,7 +66,7 @@ class CustomEnv(gym.Env):
         if cardToThrow not in validMoves:
             observation.extend(encoding(self.state.currentTrick))
             observation.extend(encoding(self.state.playerHands[1]))
-            observation.extend(encoding(self.state.discards))
+            observation.extend(encoding(self.state.discards, True))
             observation = np.array(observation).flatten().astype(np.uint8)
             reward = -100
             info = {"currentTrick": self.state.currentTrick,
@@ -82,7 +86,7 @@ class CustomEnv(gym.Env):
         # observation = []  # current_tricks,player_hands,discards
         observation.extend(encoding(self.state.currentTrick))
         observation.extend(encoding(self.state.playerHands[1]))
-        observation.extend(encoding(self.state.discards))
+        observation.extend(encoding(self.state.discards, True))
         observation = np.array(observation).flatten().astype(np.uint8)
         reward = self.state.playerScores[1]
         info = {"currentTrick": self.state.currentTrick,
