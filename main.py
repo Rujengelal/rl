@@ -12,7 +12,7 @@ checkpoint_callback = CheckpointCallback(save_freq=1000000, save_path='./logs/',
 
 model = DQN('MlpPolicy', vecEnv, verbose=0)
 model.learn(total_timesteps=13375000, callback=checkpoint_callback)
-# model.learn(total_timesteps=10)
+# model.learn(total_timesteps=10000)
 # model = DQN.load("model (1).zip")
 model.save("model")
 obs = env.reset()

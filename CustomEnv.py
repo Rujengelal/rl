@@ -75,12 +75,13 @@ class CustomEnv(gym.Env):
 
             return observation, reward, done, info
 
-        self.state.DoMove(random.choice(moves))
+        self.state.DoMove(random.choice([cardToThrow]))
 
         while self.state.playerToMove != 1 and len(self.state.discards) < 52:
 
             moves = self.state.get_valid_moves(
                 self.state.currentTrick, self.state.playerHands[self.state.playerToMove])
+            self.state.DoMove(random.choice(moves))
 
         if len(self.state.discards) >= 52:
             done = True
