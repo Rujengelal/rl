@@ -70,16 +70,17 @@ class CustomEnv(gym.Env):
             observation = np.array(observation).flatten().astype(np.uint8)
             reward = -100
             info = {"currentTrick": self.state.currentTrick,
-                    "hands": self.state.playerHands[1], "played": deck[action]}
+                    "hands": self.state.playerHands, "played": deck[action]}
             done = True
 
             return observation, reward, done, info
+
+        self.state.DoMove(random.choice(moves))
 
         while self.state.playerToMove != 1 and len(self.state.discards) < 52:
 
             moves = self.state.get_valid_moves(
                 self.state.currentTrick, self.state.playerHands[self.state.playerToMove])
-            self.state.DoMove(random.choice(moves))
 
         if len(self.state.discards) >= 52:
             done = True
