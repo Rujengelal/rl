@@ -65,7 +65,7 @@ class CustomEnv(gym.Env):
 
         if cardToThrow not in validMoves:
             observation.extend(encoding(self.state.currentTrick))
-            observation.extend(encoding(self.state.playerHands[1]))
+            observation.extend(encoding(validMoves))
             observation.extend(encoding(self.state.discards, True))
             observation = np.array(observation).flatten().astype(np.uint8)
             reward = -100
@@ -85,9 +85,11 @@ class CustomEnv(gym.Env):
 
         if len(self.state.discards) >= 52:
             done = True
+        validMoves = self.state.get_valid_moves(
+            self.state.currentTrick, self.state.playerHands[1])
         # observation = []  # current_tricks,player_hands,discards
         observation.extend(encoding(self.state.currentTrick))
-        observation.extend(encoding(self.state.playerHands[1]))
+        observation.extend(encoding(validMoves))
         observation.extend(encoding(self.state.discards, True))
         observation = np.array(observation).flatten().astype(np.uint8)
         reward = self.state.playerScores[1]
