@@ -111,9 +111,11 @@ class CustomEnv(gym.Env):
 
         observation = []  # current_tricks,player_hands,discards
         # print(len(encoding(self.state.currentTrick)))
+        validMoves = self.state.get_valid_moves(
+            self.state.currentTrick, self.state.playerHands[1])
         observation.extend(encoding(self.state.currentTrick))
-        observation.extend(encoding(self.state.playerHands[1]))
-        observation.extend(encoding(self.state.discards))
+        observation.extend(encoding(validMoves))
+        observation.extend(encoding(self.state.discards, True))
         observation = np.array(observation).flatten().astype(np.uint8)
 
         return observation  # reward, done, info can't be included
