@@ -12,19 +12,19 @@ vecEnv = CustomEnv()
 if __name__ == '__main__':
     # vecEnv = gym.make("CartPole-v1")
     # vecEnv = SubprocVecEnv([gym.make("CartPole-v1") for _ in range(2)])
-    vecEnv = make_vec_env(CustomEnv, n_envs=8, vec_env_cls=SubprocVecEnv)
+    vecEnv = make_vec_env(CustomEnv, n_envs=1, vec_env_cls=SubprocVecEnv)
     # It will check your custom environment and output additional warnings if needed
     # check_env(env)
     checkpoint_callback = CheckpointCallback(save_freq=1000000, save_path='./logs/',
                                              name_prefix='rl_model')
 
-    model = DQN('MlpPolicy', vecEnv, verbose=0)
+    model = PPO('MlpPolicy', vecEnv, verbose=0)
     # model = DQN.load("./model (2)")
     start_time = time.time()
-    # model.learn(total_timesteps=100)
-    model.learn(total_timesteps=3*13375000, callback=checkpoint_callback)
+    # model.learn(total_timesteps=13375000)
+    model.learn(total_timesteps=13375000, callback=checkpoint_callback)
     print("training end", time.time()-start_time)
-    # model = DQN.load("model (2).zip")
+    # model = DQN.load("model (3).zip")
     model.save("model")
 
     obs = vecEnv.reset()
@@ -32,16 +32,7 @@ if __name__ == '__main__':
         action, _state = model.predict(obs, deterministic=True)
         # start_time = time.time()
         obs, reward, done, info = vecEnv.step(action)
-        print(info)
-        print(reward)
-        # if done:
-        #     obs = vecEnv.reset()
-        # print("training end", time.time()-start_time)
-
-        # print(info)
-        # print(reward)
-        # print("")
-        # print("")
-        # print("")
-        # print("")
-        # print("")
+        print(info[0])
+        print(reward[0])
+        if done[0]:
+            obs = vecEnv.reset()

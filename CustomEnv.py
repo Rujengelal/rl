@@ -63,20 +63,23 @@ class CustomEnv(gym.Env):
         validMoves = self.state.get_valid_moves(
             self.state.currentTrick, self.state.playerHands[1])
 
-        if cardToThrow not in validMoves:
+        # check if the algorithm tells to play a valid move
+
+        if cardToThrow not in validMoves:  # not a valid move
             observation.extend(encoding(self.state.currentTrick))
             observation.extend(encoding(validMoves))
             observation.extend(encoding(self.state.discards, True))
             observation = np.array(observation).flatten().astype(np.uint8)
             reward = -100
             info = {"currentTrick": self.state.currentTrick,
-                    "hands": self.state.playerHands, "played": deck[action]}
+                    "hands": self.state.playerHands, "played": deck[action]}  # if reward is -100 played will be the current played card
             done = True
 
             return observation, reward, done, info
 
         self.state.DoMove(random.choice([cardToThrow]))
 
+        # simulate play till its again players turn
         while self.state.playerToMove != 1 and len(self.state.discards) < 52:
 
             moves = self.state.get_valid_moves(
@@ -94,7 +97,7 @@ class CustomEnv(gym.Env):
         observation = np.array(observation).flatten().astype(np.uint8)
         reward = self.state.playerScores[1]
         info = {"currentTrick": self.state.currentTrick,
-                "hands": self.state.playerHands, "played": deck[action]}
+                "hands": self.state.playerHands, "played": deck[action]}  # if reward is 100/0 the played is card played before
 
         return observation, reward, done, info
 
