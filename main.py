@@ -22,7 +22,7 @@ if __name__ == '__main__':
     # model = DQN.load("./model (2)")
     start_time = time.time()
     # model.learn(total_timesteps=13375000)
-    model.learn(total_timesteps=133750, callback=checkpoint_callback)
+    model.learn(total_timesteps=13375000, callback=checkpoint_callback)
     print("training end", time.time()-start_time)
     # model = DQN.load("model (3).zip")
     model.save("model")
