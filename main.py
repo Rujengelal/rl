@@ -12,7 +12,7 @@ vecEnv = CustomEnv()
 if __name__ == '__main__':
     # vecEnv = gym.make("CartPole-v1")
     # vecEnv = SubprocVecEnv([gym.make("CartPole-v1") for _ in range(2)])
-    vecEnv = make_vec_env(CustomEnv, n_envs=1, vec_env_cls=SubprocVecEnv)
+    vecEnv = make_vec_env(CustomEnv, n_envs=8, vec_env_cls=SubprocVecEnv)
     # It will check your custom environment and output additional warnings if needed
     # check_env(env)
     checkpoint_callback = CheckpointCallback(save_freq=1000000, save_path='./logs/',
