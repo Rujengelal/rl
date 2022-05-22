@@ -181,6 +181,7 @@ class CallBreakState(GameState):
         self.playerScores = {p: 0 for p in range(1, self.numberOfPlayers + 1)}
         self.discards = []         # Stores the cards that have been played already in this round
         self.currentTrick = []
+        self.benchmarks = {1: 0, 2: 0, 3: 0, 4: 0}
         self.Deal(playerMoves, currentTrick, discards)
 
     def GetNextPlayer(self, p):
@@ -373,6 +374,8 @@ class CallBreakState(GameState):
             # print("4 tricks")
             winnerIndex = self.getWinnerIndex()
             self.playerToMove = winnerIndex
+            self.benchmarks[winnerIndex] += 1
+
             # print("*****************************",winnerIndex)
 
             # self.tricksTaken[trickWinner] += 1

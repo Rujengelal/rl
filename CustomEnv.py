@@ -1,15 +1,37 @@
 import random
+import sys
 import gym
 from gym import spaces
 import numpy as np
+from stable_baselines3 import DQN, PPO
 from ismcts import Card, build_deck
 
 from ismcts import CallBreakState
+
+
+newer_python_version = sys.version_info.major == 3 and sys.version_info.minor >= 8
+
+custom_objects = {}
+if newer_python_version:
+    custom_objects = {
+        "learning_rate": 0.0,
+        "lr_schedule": lambda _: 0.0,
+        "clip_range": lambda _: 0.0,
+    }
 deck = [
     Card(rank, suit)
     for rank in range(2, 14 + 1)
     for suit in ["C", "D", "H", "S"]
 ]
+
+
+def reverseEncoding(encoded):
+    seq = []
+    for idx, card in enumerate(encoded):
+        if card == 1:
+            seq.append[deck[idx]]
+
+    return seq
 
 
 def encoding(to_encode, reverse=False):
@@ -32,6 +54,15 @@ def encoding(to_encode, reverse=False):
     return encoded_labels
 
 
+def getObservationSpace(currentTrick, validMoves, discards):
+    observation = []
+    observation.extend(encoding(currentTrick))
+    observation.extend(encoding(validMoves))
+    observation.extend(encoding(discards, True))
+    observation = np.array(observation).flatten().astype(np.uint8)
+    return observation
+
+
 class CustomEnv(gym.Env):
     """Custom Environment that follows gym interface"""
     metadata = {'render.modes': ['human']}
@@ -49,6 +80,8 @@ class CustomEnv(gym.Env):
             low=0, high=1, shape=sh.shape, dtype=np.uint8)
 
         print(Card(2, "S") in deck)
+        self.AIBOT = PPO.load("./model (4)",
+                              custom_objects=custom_objects)
 
         # self.observation_space = spaces.Discrete(n=2)
 
@@ -66,10 +99,9 @@ class CustomEnv(gym.Env):
         # check if the algorithm tells to play a valid move
 
         if cardToThrow not in validMoves:  # not a valid move
-            observation.extend(encoding(self.state.currentTrick))
-            observation.extend(encoding(validMoves))
-            observation.extend(encoding(self.state.discards, True))
-            observation = np.array(observation).flatten().astype(np.uint8)
+
+            observation = getObservationSpace(
+                self.state.currentTrick, validMoves, self.state.discards)
             reward = -100
             info = {"currentTrick": self.state.currentTrick,
                     "hands": self.state.playerHands, "played": deck[action]}  # if reward is -100 played will be the current played card
@@ -84,6 +116,13 @@ class CustomEnv(gym.Env):
 
             moves = self.state.get_valid_moves(
                 self.state.currentTrick, self.state.playerHands[self.state.playerToMove])
+
+            action, _state = self.AIBOT.predict(getObservationSpace(
+                self.state.currentTrick, moves, self.state.discards), deterministic=True)
+
+            # if deck[action] in moves:
+            #     self.state.DoMove(random.choice([deck[action]]))
+            # else:
             self.state.DoMove(random.choice(moves))
 
         if len(self.state.discards) >= 52:
@@ -91,10 +130,8 @@ class CustomEnv(gym.Env):
         validMoves = self.state.get_valid_moves(
             self.state.currentTrick, self.state.playerHands[1])
         # observation = []  # current_tricks,player_hands,discards
-        observation.extend(encoding(self.state.currentTrick))
-        observation.extend(encoding(validMoves))
-        observation.extend(encoding(self.state.discards, True))
-        observation = np.array(observation).flatten().astype(np.uint8)
+        observation = getObservationSpace(
+            self.state.currentTrick, validMoves, self.state.discards)
         reward = self.state.playerScores[1]
         info = {"currentTrick": self.state.currentTrick,
                 "hands": self.state.playerHands, "played": deck[action]}  # if reward is 100/0 the played is card played before
@@ -124,7 +161,10 @@ class CustomEnv(gym.Env):
         return observation  # reward, done, info can't be included
 
     def render(self, mode='human'):
-        print("render")
+        print(self.state.benchmarks)
+        print("currentTricks", self.state.currentTrick)
+        print("hands", self.state.playerHands[1])
+        print("\n\n")
 
     def close(self):
         print("close")
