@@ -22,13 +22,13 @@ if __name__ == '__main__':
     # model = DQN.load("./model (2)")
     start_time = time.time()
     # model.learn(total_timesteps=13375000)
-    model.learn(total_timesteps=13375000, callback=checkpoint_callback)
+    model.learn(total_timesteps=133750, callback=checkpoint_callback)
     print("training end", time.time()-start_time)
     # model = DQN.load("model (3).zip")
     model.save("model")
 
     obs = vecEnv.reset()
-    for i in range(13):
+    for i in range(130):
         action, _state = model.predict(obs, deterministic=True)
         # start_time = time.time()
         obs, reward, done, info = vecEnv.step(action)
