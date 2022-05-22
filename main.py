@@ -26,7 +26,7 @@ if __name__ == '__main__':
     vecEnv = make_vec_env(CustomEnv, n_envs=8, vec_env_cls=SubprocVecEnv)
     # It will check your custom environment and output additional warnings if needed
     # check_env(env)
-    checkpoint_callback = CheckpointCallback(save_freq=1000000, save_path='./logs/',
+    checkpoint_callback = CheckpointCallback(save_freq=100000, save_path='./logs/',
                                              name_prefix='rl_model')
 
     model = PPO('MlpPolicy', vecEnv, verbose=0)
