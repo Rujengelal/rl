@@ -37,7 +37,7 @@ if __name__ == '__main__':
     start_time = time.time()
 
     # model.learn(total_timesteps=13375000)
-    model.learn(total_timesteps=10,
+    model.learn(total_timesteps=4253696,
                 callback=checkpoint_callback)
     print(model.learning_rate)
 
