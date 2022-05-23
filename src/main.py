@@ -30,12 +30,14 @@ if __name__ == '__main__':
                                              name_prefix='rl_model')
 
     model = PPO('MlpPolicy', vecEnv, verbose=0)
-    model = PPO.load("./model (4)", env=CustomEnv(),
+    # model = PPO.load("./src/model", env=CustomEnv(),
+    #                  custom_objects=custom_objects, verbose=1)
+    model = PPO.load("./src/model", env=vecEnv,
                      custom_objects=custom_objects, verbose=1)
     start_time = time.time()
 
     # model.learn(total_timesteps=13375000)
-    model.learn(total_timesteps=13375000,
+    model.learn(total_timesteps=10,
                 callback=checkpoint_callback)
     print(model.learning_rate)
 

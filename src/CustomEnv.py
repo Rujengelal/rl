@@ -4,7 +4,7 @@ import gym
 from gym import spaces
 import numpy as np
 from stable_baselines3 import DQN, PPO
-from ismcts import Card, build_deck
+from ismcts import Card
 
 from ismcts import CallBreakState
 
@@ -80,7 +80,7 @@ class CustomEnv(gym.Env):
             low=0, high=1, shape=sh.shape, dtype=np.uint8)
 
         print(Card(2, "S") in deck)
-        self.AIBOT = PPO.load("./model (4)",
+        self.AIBOT = PPO.load("./src/model",
                               custom_objects=custom_objects)
 
         # self.observation_space = spaces.Discrete(n=2)

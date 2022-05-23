@@ -1,14 +1,25 @@
+from ismcts import CallBreakState, cardToString, jsonToState, ISMCTS
+from bot import get_bid, get_play_card
 import os
+import sys
 
 from sanic import Sanic
 from sanic.response import json
 from sanic.request import Request
 from sanic_cors import CORS
+from stable_baselines3 import PPO
+from CustomEnv import CustomEnv, getObservationSpace, deck as CARDDECK
 # from joblib import load
+newer_python_version = sys.version_info.major == 3 and sys.version_info.minor >= 8
 
+custom_objects = {}
+if newer_python_version:
+    custom_objects = {
+        "learning_rate": 0.0,
+        "lr_schedule": lambda _: 0.0,
+        "clip_range": lambda _: 0.0,
+    }
 
-from bot import get_bid, get_play_card
-from ismcts import CallBreakState, cardToString, jsonToState, ISMCTS
 
 # to enable debug, run app with `DEBUG=1 python src/app.py`
 DEBUG = int(os.getenv("DEBUG")) or False
@@ -30,6 +41,8 @@ def build_deck():
 
 
 deck = build_deck()
+model = PPO.load("./model (4)",
+                 custom_objects=custom_objects, verbose=1)
 
 
 def print(args):
@@ -210,6 +223,22 @@ def play(request: Request):
     # print(_cards)
     # print(hands_in_play)
     # print(discards)
+    validMovesPlayer = state.get_valid_moves(
+        state.currentTrick, state.playerHands[1])
+    obs = getObservationSpace(
+        state.currentTrick, validMovesPlayer, state.discards)
+
+    action, _state = model.predict(obs, deterministic=True)
+
+    action = CARDDECK[action]
+    print("*******************************************")
+    print(action)
+    print(state.playerHands[1])
+    print(validMovesPlayer)
+    if action in validMovesPlayer:
+        return json({"value": cardToString(action)})
+    else:
+        return json({"value": cardToString(validMovesPlayer[0])})
 
     # state = state.CloneAndRandomize(len(hands_in_play)+1)
     # print(state.playerHands)

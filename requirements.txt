@@ -1,5 +1,5 @@
 sanic
 sanic-cors
-# scikit-learn
+scikit-learn
 mcts
 stable-baselines3[extra]
