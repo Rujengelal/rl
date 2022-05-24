@@ -14,6 +14,14 @@ import sys
 import pickle
 from CustomEnv import CustomEnv, getObservationSpace, deck as CARDDECK
 
+
+info_set = [
+    [0 for _ in range(52)],
+    [0 for _ in range(52)],
+    [0 for _ in range(52)],
+    [0 for _ in range(52)]
+]
+
 sys.setrecursionlimit(5000)
 newer_python_version = sys.version_info.major == 3 and sys.version_info.minor >= 8
 
@@ -34,7 +42,7 @@ CORS(app)
 
 old_print = print
 searcher = mcts(timeLimit=30000)
-model = PPO.load("./src/model",
+model = PPO.load("./src/model_new",
                  custom_objects=custom_objects, verbose=1)
 
 
@@ -92,6 +100,13 @@ clf = load("./filename.joblib")
 
 @app.route("/bid", methods=["POST"])
 def bid(request: Request):
+    global info_set
+    info_set = [
+        [0 for _ in range(52)],
+        [0 for _ in range(52)],
+        [0 for _ in range(52)],
+        [0 for _ in range(52)]
+    ]
     print("************************Bid called")
     body = request.json
     print(body)
@@ -106,8 +121,8 @@ def bid(request: Request):
     # # return json({"value": int(bid[0])})
 
     if bid[0] > 0:
-        if bid[0] > 4:
-            return json({"value": int(4)})
+        if bid[0] > 8:
+            return json({"value": int(8)})
 
         return json({"value": int(bid[0])})
     else:
@@ -203,6 +218,7 @@ def play(request: Request):
     print(action)
     print(state.playerHands)
     print(validMovesPlayer)
+    print(state.getCurrentPlayer())
     if action in validMovesPlayer:
         return json({"value": cardToString(action)})
     else:

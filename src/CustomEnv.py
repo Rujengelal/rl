@@ -80,7 +80,7 @@ class CustomEnv(gym.Env):
             low=0, high=1, shape=sh.shape, dtype=np.uint8)
 
         print(Card(2, "S") in deck)
-        self.AIBOT = PPO.load("./src/model",
+        self.AIBOT = PPO.load("./src/model_new",
                               custom_objects=custom_objects)
 
         # self.observation_space = spaces.Discrete(n=2)
@@ -104,7 +104,8 @@ class CustomEnv(gym.Env):
                 self.state.currentTrick, validMoves, self.state.discards)
             reward = -100
             info = {"currentTrick": self.state.currentTrick,
-                    "hands": self.state.playerHands, "played": deck[action]}  # if reward is -100 played will be the current played card
+                    "hands": self.state.playerHands, "played": deck[action],
+                    "wins": self.state.benchmarks}  # if reward is -100 played will be the current played card
             done = True
 
             return observation, reward, done, info
@@ -134,14 +135,14 @@ class CustomEnv(gym.Env):
             self.state.currentTrick, validMoves, self.state.discards)
         reward = self.state.playerScores[1]
         info = {"currentTrick": self.state.currentTrick,
-                "hands": self.state.playerHands, "played": deck[action]}  # if reward is 100/0 the played is card played before
+                "hands": self.state.playerHands, "played": deck[action], "wins": self.state.benchmarks}  # if reward is 100/0 the played is card played before
 
         return observation, reward, done, info
 
     def reset(self):
 
         self.state = CallBreakState(4)
-        self.state.playerToMove = 2
+        # self.state.playerToMove = 2
 
         while self.state.playerToMove != 1:
 
@@ -161,9 +162,11 @@ class CustomEnv(gym.Env):
         return observation  # reward, done, info can't be included
 
     def render(self, mode='human'):
-        print(self.state.benchmarks)
-        print("currentTricks", self.state.currentTrick)
-        print("hands", self.state.playerHands[1])
+        for x in self.state.benchmarks.keys():
+
+            print(str(x)+"   "+str(self.state.benchmarks[x]))
+        # print("currentTricks", self.state.currentTrick)
+        # print("hands", self.state.playerHands[1])
         print("\n\n")
 
     def close(self):

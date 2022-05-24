@@ -70,8 +70,8 @@ Add ./filename.joblib .
 # # RUN conda activate pypy
 # # SHELL ["conda", "run", "-n", "pypy", "/bin/bash", "-c"]
 # # RUN conda activate pypy
-# RUN pip install  -r requirements.txt
-RUN pip install -i https://mirrors.aliyun.com/pypi/simple/ -r requirements.txt
+RUN pip install  -r requirements.txt
+# RUN pip install -i https://mirrors.aliyun.com/pypi/simple/ -r requirements.txt
 
 # # Define environment variable
 # # ENV NAME World
