@@ -2,7 +2,7 @@ from joblib import load
 from stable_baselines3 import PPO
 from CustomEnv import getObservationSpace
 from newBot import CallBreakState
-from ismcts import cardToString, jsonToState, ISMCTS
+from ismcts import cardToString, jsonToState, ISMCTS, stringToCard
 from bot import get_bid, get_play_card
 from mcts import mcts
 from sanic_cors import CORS
@@ -15,12 +15,13 @@ import pickle
 from CustomEnv import CustomEnv, getObservationSpace, deck as CARDDECK
 
 
-info_set = [
-    [0 for _ in range(52)],
-    [0 for _ in range(52)],
-    [0 for _ in range(52)],
-    [0 for _ in range(52)]
-]
+info_set = {
+    1: [0 for _ in range(52)],
+    2: [0 for _ in range(52)],
+    3: [0 for _ in range(52)],
+    4: [0 for _ in range(52)]
+}
+first_iter = True
 
 sys.setrecursionlimit(5000)
 newer_python_version = sys.version_info.major == 3 and sys.version_info.minor >= 8
@@ -101,12 +102,14 @@ clf = load("./filename.joblib")
 @app.route("/bid", methods=["POST"])
 def bid(request: Request):
     global info_set
-    info_set = [
-        [0 for _ in range(52)],
-        [0 for _ in range(52)],
-        [0 for _ in range(52)],
-        [0 for _ in range(52)]
-    ]
+    global first_iter
+    first_iter = True
+    info_set = {
+        1: [0 for _ in range(52)],
+        2: [0 for _ in range(52)],
+        3: [0 for _ in range(52)],
+        4: [0 for _ in range(52)]
+    }
     print("************************Bid called")
     body = request.json
     print(body)
@@ -197,28 +200,87 @@ def play(request: Request):
     # print("Play called")
     print(body)
 
+    global info_set
+    global first_iter
+
     _cards, hands_in_play, discards = jsonToState(body)
+    if first_iter:  # initaialize information set with correct values
+        for idx, card in enumerate(CARDDECK):
+            playerIdx = len(hands_in_play)+1
+            if card in _cards:
+                for i in range(1, 5):
+                    if i == playerIdx:
+                        info_set[i][idx] = 100
+                    else:
+                        info_set[i][idx] = 0
+            else:
+                for i in range(1, 5):
+                    if i != playerIdx:
+                        info_set[i][idx] = 33
+                    else:
+                        info_set[i][idx] = 0
+        print("*******************************************************")
+        first_iter = False
+
+    # print(info_set)
+
+    # update information set on the basis of history
+    if body["history"] != []:
+        lastPlay = body["history"][-1]
+        for c in lastPlay[1]:
+            card = stringToCard(c)
+            info_set[1][CARDDECK.index(card)] = 0
+            info_set[2][CARDDECK.index(card)] = 0
+            info_set[3][CARDDECK.index(card)] = 0
+            info_set[4][CARDDECK.index(card)] = 0
+
+    # update information set on the basis of not following the suits
+    if hands_in_play != [] and body["history"] != []:
+        lookup = {"C": 0,
+                  "D": 1,
+                  "H": 2,
+                  "S": 3}
+
+        # startingPlayer = body["history"][-1][2]+1
+        startingPlayer = hands_in_play[0][0]
+        for idx, card in hands_in_play:
+            play_suit = hands_in_play[0][1].suit
+            print("play_suit != card.suit")
+            print(play_suit != card.suit)
+            if play_suit != card.suit:
+                print("suit not followed")
+
+                startingIndx = lookup[play_suit]*13
+                for c in range(startingIndx, startingIndx+13):
+                    # print(play_suit)
+                    # print(startingIndx)
+                    # print(startingIndx+13)
+                    # print(idx)
+                    # print(c)
+                    info_set[idx][c] = 0
+                # print(info_set)
+
+    # print(info_set)
+
+    state = CallBreakState(4, _cards, hands_in_play,
+                           discards, len(hands_in_play)+1, info_set)
     print(_cards)
     print(hands_in_play)
-    state = CallBreakState(4, _cards, hands_in_play,
-                           discards, len(hands_in_play)+1)
+    print(state.playerHands)
 
     validMovesPlayer = state.get_valid_moves(
         state.currentTrick, state.playerHands[state.getCurrentPlayer()])
     obs = getObservationSpace(
         state.currentTrick, validMovesPlayer, state.discards)
 
-    print("len of obs")
-    print(len(obs))
-
     action, _state = model.predict(obs, deterministic=True)
 
     action = CARDDECK[action]
-    print("*******************************************")
-    print(action)
-    print(state.playerHands)
-    print(validMovesPlayer)
-    print(state.getCurrentPlayer())
+    # print("*******************************************")
+    # print(action)
+    # print(state.playerHands)
+    # print(validMovesPlayer)
+    # print(state.getCurrentPlayer())
     if action in validMovesPlayer:
         return json({"value": cardToString(action)})
     else:

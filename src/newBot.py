@@ -6,6 +6,7 @@ import re
 from typing import List
 import time
 from mcts import mcts
+from CustomEnv import deck as CARDDECK
 
 
 def cardToString(x):
@@ -147,7 +148,7 @@ class CallBreakState(GameState):
     and the trump suit for each round is picked randomly rather than being chosen by one of the players.
     """
 
-    def __init__(self, n, playerMoves=None, currentTrick=None, discards=None, playerToMove=None):
+    def __init__(self, n, playerMoves=None, currentTrick=None, discards=None, playerToMove=None, infoSet=None):
         """Initialise the game state. n is the number of players (from 2 to 7)."""
         self.numberOfPlayers = n
         self.playerToMove = 1 if playerToMove is None else playerToMove
@@ -156,6 +157,7 @@ class CallBreakState(GameState):
         self.playerScores = {p: 0 for p in range(1, self.numberOfPlayers + 1)}
         self.discards = []         # Stores the cards that have been played already in this round
         self.currentTrick = []
+        self.infoSet = infoSet
         self.Deal(playerMoves, currentTrick, discards)
 
     def GetNextPlayer(self, p):
@@ -220,7 +222,8 @@ class CallBreakState(GameState):
                 self.playerHands[p] = deck[: self.tricksInRound]
                 deck = deck[self.tricksInRound:]
         else:
-            deck = [x for x in self.GetCardDeck() if x not in playerMoves]
+            deck = [x for x in self.GetCardDeck(
+            ) if x not in playerMoves and x not in self.discards]
             random.shuffle(deck)
             numberOfTricks = len(playerMoves)
             count = len(currentTricks)+1
@@ -228,20 +231,40 @@ class CallBreakState(GameState):
                 if count == self.playerToMove:
                     # print("this", count)
                     self.playerHands[count] = playerMoves
-                elif count > len(currentTricks):
+                elif count > self.playerToMove:
 
-                    self.playerHands[count] = deck[: numberOfTricks]
-                    deck = deck[numberOfTricks:]
+                    # self.playerHands[count] = deck[: numberOfTricks]
+                    print(self.infoSet[count])
+                    self.playerHands[count], deck = self.getCardsFromInfoSet(
+                        count, deck, numberOfTricks)
+                    print(count)
+                    print(deck)
+                    # deck = deck[numberOfTricks:]
                 else:
-                    self.playerHands[count] = deck[: numberOfTricks-1]
-                    deck = deck[numberOfTricks-1:]
+                    print(self.infoSet[count])
+
+                    # self.playerHands[count] = deck[: numberOfTricks-1]
+                    self.playerHands[count], deck = self.getCardsFromInfoSet(
+                        count, deck, numberOfTricks-1)
+                    print(count)
+
+                    print(deck)
+
+                    # deck = deck[numberOfTricks-1:]
                 count = count % 4+1
 
-                # if count == self.playerToMove:
-                #     print("this", count)
-                #     self.playerHands[count] = playerMoves
-                # else:
-                #     self.playerHands[count]=deck
+    def getCardsFromInfoSet(self, p, deck, numberOfCards):
+        cards = []
+        tempDeck = deepcopy(deck)
+        for c in deck:
+            cardIndx = CARDDECK.index(c)
+            if self.infoSet[p][cardIndx] != 0:
+                cards.append(c)
+                tempDeck.remove(c)
+            if len(cards) == numberOfCards:
+                break
+
+        return cards, tempDeck
 
     def GetMoves(self):
         """Get all possible moves from this state."""
@@ -286,13 +309,6 @@ class CallBreakState(GameState):
         highest_card = self.get_highest_hand(state, True)
         spade_suit_valid_moves = [x for x in spade_suit_moves if self.getCardWorth(
             highest_card) < self.getCardWorth(x)]
-
-        # if len(spade_suit_moves) and highest_card.suit == "S":
-        #     spade_suit_valid_moves = self.get_valid_moves(
-        #         state, spade_suit_moves, True)
-
-        #     # return sorted(spade_suit_valid_moves, key=lambda x: self.getCardWorth(x))
-        #     return spade_suit_valid_moves
 
         if len(spade_suit_valid_moves):
             return spade_suit_valid_moves

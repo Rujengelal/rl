@@ -23,6 +23,22 @@ from typing import List
 import time
 
 
+def stringToCard(x):
+    if x[0] == "T":
+        value = 10
+    elif x[0] == "J":
+        value = 11
+    elif x[0] == "Q":
+        value = 12
+    elif x[0] == "K":
+        value = 13
+    elif x[0] == "1":
+        value = 14
+    else:
+        value = int(x[0])
+    return Card(value, x[1])
+
+
 def cardToString(x):
     return "??23456789TJQK1"[x.rank]+x.suit
 
@@ -75,6 +91,7 @@ def jsonToState(body):
         init_state.append((idx+1, Card(value, x[1])))
     history = []
     for i in body["history"]:
+
         playerId = int(i[0])+1
         for x in i[1]:
             # value = 0
