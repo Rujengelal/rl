@@ -31,7 +31,6 @@ if __name__ == '__main__':
 
     model = PPO('MlpPolicy', vecEnv, verbose=1,
                 tensorboard_log="./tensorboard_logs/")
-    model.logger
     # model = PPO.load("./src/model", env=CustomEnv(),
     #                  custom_objects=custom_objects, verbose=1)
     # model = PPO.load("./src/model_new", env=vecEnv,

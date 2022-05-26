@@ -391,7 +391,7 @@ class CallBreakState(GameState):
                     reward = 0
 
             #     self.playerScores[i]+=1*reward
-                self.playerScores[i] = reward
+                self.playerScores[i] += reward
 
             # notWinners=[x for (x,_) in self.currentTrick if x !=winnerIndex]
             # self.playerScores[winnerIndex]+=150-self.getCardWorth(self.currentTrick[winnerIndex-1][1])

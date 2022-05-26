@@ -5,6 +5,7 @@ from gym import spaces
 import numpy as np
 from stable_baselines3 import DQN, PPO
 from ismcts import Card
+import glob
 
 from ismcts import CallBreakState
 
@@ -78,6 +79,7 @@ class CustomEnv(gym.Env):
         # Example for using image as input (channel-first; channel-last also works):
         self.observation_space = spaces.Box(
             low=0, high=1, shape=sh.shape, dtype=np.uint8)
+        self.timeStepCounter = 0
 
         print(Card(2, "S") in deck)
         self.AIBOT = PPO.load("./src/model_new",
@@ -86,6 +88,9 @@ class CustomEnv(gym.Env):
         # self.observation_space = spaces.Discrete(n=2)
 
     def step(self, action):
+        self.timeStepCounter += 1
+        if self.timeStepCounter % 200000 == 0:
+            self.changeBot()
         reward = 0
         done = False
         info = {}
@@ -168,6 +173,14 @@ class CustomEnv(gym.Env):
         # print("currentTricks", self.state.currentTrick)
         # print("hands", self.state.playerHands[1])
         print("\n\n")
+
+    def changeBot(self):
+        print("bot changed")
+        models = glob.glob("../logs/*")
+        if len(models) != 0:
+            latest = models[-1]
+            self.AIBOT = PPO.load(latest,
+                                  custom_objects=custom_objects)
 
     def close(self):
         print("close")
